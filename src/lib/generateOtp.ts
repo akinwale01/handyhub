@@ -1,3 +1,10 @@
-export function generateOtp() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+export function generateOtp(length = 6) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let otp = "";
+
+  for (let i = 0; i < length; i++) {
+    otp += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return otp;
 }

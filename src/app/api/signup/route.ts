@@ -6,6 +6,7 @@ import Otp from "../../../models/Otp";
 import { generateOtp } from "../../../lib/generateOtp";
 import { sendOtpEmail } from "../../../lib/mailer";
 import { checkRateLimit } from "../../../lib/rateLimit";
+import { hashOtp } from "../../../lib/hashOtp";
 
 export async function POST(req: Request) {
   try {
@@ -29,22 +30,26 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase().trim();
 
+    const existingUser = await User.findOne({ email: normalizedEmail });
+
+    // 🔁 RESEND OTP if user exists but not verified
     if (existingUser) {
-      // If user exists but NOT verified → resend OTP instead of blocking
       if (!existingUser.emailVerified) {
         const otp = generateOtp();
+        const hashedOtp = hashOtp(otp);
 
-        await Otp.deleteMany({ email });
+        await Otp.deleteMany({ email: normalizedEmail });
 
         await Otp.create({
-          email,
-          otp,
+          email: normalizedEmail,
+          otp: hashedOtp,
+          type: "signup",
           expiresAt: new Date(Date.now() + 5 * 60 * 1000),
         });
 
-        await sendOtpEmail(email, otp);
+        await sendOtpEmail(normalizedEmail, otp);
 
         return NextResponse.json({
           success: true,
@@ -58,12 +63,13 @@ export async function POST(req: Request) {
       );
     }
 
+    // ✅ CREATE USER
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await User.create({
       firstName,
       lastName,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
       role: null,
       onboardingStep: "role",
@@ -71,18 +77,20 @@ export async function POST(req: Request) {
       profileCompleted: false,
     });
 
+    // ✅ CREATE OTP
     const otp = generateOtp();
+    const hashedOtp = hashOtp(otp);
 
     await Otp.create({
-      email,
-      otp,
+      email: normalizedEmail,
+      otp: hashedOtp,
+      type: "signup",
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    await sendOtpEmail(email, otp);
+    await sendOtpEmail(normalizedEmail, otp);
 
     return NextResponse.json({ success: true });
-
   } catch (error) {
     console.error("Signup error:", error);
 

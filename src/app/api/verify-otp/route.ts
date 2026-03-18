@@ -3,15 +3,8 @@ import { connectDB } from "../../../lib/mongodb";
 import User from "../../../models/User";
 import Otp from "../../../models/Otp";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
+import { hashOtp } from "../../../lib/hashOtp";
 import { checkRateLimit } from "../../../lib/rateLimit";
-
-function hashOtp(otp: string) {
-  return crypto
-    .createHash("sha256")
-    .update(otp)
-    .digest("hex");
-}
 
 export async function POST(req: Request) {
   try {
@@ -46,8 +39,8 @@ export async function POST(req: Request) {
     await connectDB();
 
     const normalizedEmail = email.toLowerCase().trim();
-    const formattedOtp = otp.toUpperCase().trim(); // 🔠 force uppercase
-    const hashedOtp = hashOtp(formattedOtp); // 🔒 hash before lookup
+    const formattedOtp = otp.toUpperCase().trim();
+    const hashedOtp = hashOtp(formattedOtp);
 
     const otpRecord = await Otp.findOne({
       email: normalizedEmail,
@@ -78,7 +71,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔹 SIGNUP FLOW
+    // ✅ SIGNUP FLOW
     if (type === "signup") {
       user.emailVerified = true;
       await user.save();
@@ -94,7 +87,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, token });
     }
 
-    // 🔹 RESET PASSWORD FLOW
+    // ✅ RESET FLOW
     if (type === "reset") {
       await Otp.deleteOne({ _id: otpRecord._id });
 
@@ -115,7 +108,6 @@ export async function POST(req: Request) {
       { error: "Something went wrong" },
       { status: 400 }
     );
-
   } catch (error) {
     console.error("Verify OTP error:", error);
     return NextResponse.json(

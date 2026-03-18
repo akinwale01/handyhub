@@ -7,6 +7,13 @@ import TopNavbar from "../../components/provider/TopNav";
 import BottomNav from "../../components/provider/BottomNav";
 import FloatingMenu from "../../components/provider/FloatingMenu";
 import Sidebar from "../../components/provider/Sidebar";
+import {
+  TopNavbarSkeleton,
+  BottomNavSkeleton,
+  SidebarSkeleton,
+  PageSkeleton,
+} from "../../components/provider/Skeletons";
+
 
 const fetcher = (url: string) =>
   fetch(url).then((res) => {
@@ -26,7 +33,7 @@ export default function ProviderLayout({
     <SWRConfig
       value={{
         fetcher,
-        refreshInterval: 15000,
+        refreshInterval: 100000,
         revalidateOnFocus: true,
         revalidateOnReconnect: true,
         dedupingInterval: 5000,

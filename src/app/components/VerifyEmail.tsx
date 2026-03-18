@@ -38,11 +38,17 @@ export default function VerifyEmailPage() {
   }, [otp, verifying, status]);
 
   const handleChange = (value: string, index: number) => {
-    if (!/^\d?$/.test(value) || verifying) return;
+    if (verifying) return;
+
+    // ✅ Only allow alphanumeric characters
+    const upper = value.toUpperCase();
+    if (!/^[A-Z0-9]?$/.test(upper)) return;
+
     const arr = [...otp];
-    arr[index] = value;
+    arr[index] = upper;
     setOtp(arr);
-    if (value && index < OTP_LENGTH - 1) {
+
+    if (upper && index < OTP_LENGTH - 1) {
       inputsRef.current[index + 1]?.focus();
     }
   };
@@ -56,15 +62,15 @@ export default function VerifyEmailPage() {
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     if (verifying) return;
-    const paste = e.clipboardData.getData("Text").trim();
-    if (!/^\d+$/.test(paste)) return;
+    const paste = e.clipboardData.getData("Text").trim().toUpperCase();
+    if (!/^[A-Z0-9]+$/.test(paste)) return;
 
-    const digits = paste.split("").slice(0, OTP_LENGTH);
+    const chars = paste.split("").slice(0, OTP_LENGTH);
     const newOtp = Array(OTP_LENGTH).fill("");
-    digits.forEach((d, i) => (newOtp[i] = d));
+    chars.forEach((c, i) => (newOtp[i] = c));
     setOtp(newOtp);
 
-    inputsRef.current[Math.min(digits.length, OTP_LENGTH - 1)]?.focus();
+    inputsRef.current[Math.min(chars.length, OTP_LENGTH - 1)]?.focus();
   };
 
   const verifyOtp = async () => {
@@ -76,21 +82,21 @@ export default function VerifyEmailPage() {
       const res = await fetch("/api/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: otp.join("") }),
+        body: JSON.stringify({ email, otp: otp.join(""), type: "signup" }),
       });
 
       if (!res.ok) throw new Error();
 
       const data = await res.json();
 
-      // ✅ Automatically sign in after OTP verification
       if (data?.token) {
         await signIn("credentials", {
           redirect: false,
           email,
-          token: data.token, // this token comes from API
+          token: data.token,
         });
       }
+
       setStatus("success");
       setTimeout(() => router.push(`/auth/select-role?email=${email}`), 2000);
 
@@ -120,7 +126,6 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-black via-zinc-900 to-zinc-950 px-4 relative">
-      {/* Success toast */}
       {status === "success" && (
         <div className="fixed top-2 right-2 z-50 bg-green-500/10 border border-green-500/30 text-green-400 text-sm rounded-xl px-4 py-3 shadow-lg backdrop-blur-md animate-fadeIn">
           <p className="font-medium">Email verified successfully 🎉</p>
@@ -132,7 +137,7 @@ export default function VerifyEmailPage() {
 
       <div className="w-full max-w-md bg-zinc-900/80 backdrop-blur-xl rounded-2xl p-8 shadow-xl animate-fadeIn flex flex-col gap-6 text-center">
         <h1 className="text-2xl font-bold text-white">Verify your email</h1>
-        <p className="text-zinc-400">Enter the 6-digit code sent to your email</p>
+        <p className="text-zinc-400">Enter the 6-character code sent to your email</p>
 
         <div className={`flex justify-center gap-3 ${status === "error" ? "animate-shake" : ""}`}>
           {otp.map((digit, i) => (

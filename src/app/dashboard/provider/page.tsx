@@ -68,7 +68,7 @@ const renderSlice = (props: SliceProps) => {
 
 
 /* ========================= */
-/* 🔌 SWR Fetcher (FIXED)    */
+/* 🔌 SWR Fetcher*/
 /* ========================= */
 const fetcher = (url: string) =>
   fetch(url, {
@@ -125,7 +125,7 @@ export default function ProviderHome() {
             </p>
           </div>
 
-          <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-black font-semibold hover:opacity-90 transition">
+          <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-black font-semibold hover:opacity-90 transition cursor-pointer">
             Withdraw
             <ArrowUpRight size={16} />
           </button>

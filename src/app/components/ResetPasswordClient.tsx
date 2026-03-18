@@ -190,23 +190,23 @@ export default function ResetPasswordClient() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-sm text-gray-600 text-right"
+                className="text-sm text-gray-600 text-right cursor-pointer"
               >
                 {showPassword ? "Hide Password" : "Show Password"}
               </button>
 
               {/* Password Rules */}
               <div className="text-sm space-y-1">
-                <p className={password.length >= 8 ? "text-green-600" : "text-gray-400"}>
+                <p className={password.length >= 8 ? "text-green-600" : "text-red-400"}>
                   • Minimum 8 characters
                 </p>
-                <p className={/[A-Z]/.test(password) ? "text-green-600" : "text-gray-400"}>
+                <p className={/[A-Z]/.test(password) ? "text-green-600" : "text-red-400"}>
                   • At least one uppercase
                 </p>
-                <p className={/\d/.test(password) ? "text-green-600" : "text-gray-400"}>
+                <p className={/\d/.test(password) ? "text-green-600" : "text-red-400"}>
                   • At least one number
                 </p>
-                <p className={/[@$!%*?&]/.test(password) ? "text-green-600" : "text-gray-400"}>
+                <p className={/[@$!%*?&]/.test(password) ? "text-green-600" : "text-red-400"}>
                   • At least one special character
                 </p>
               </div>

@@ -21,7 +21,7 @@ export default function TopNavbar() {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 w-full z-40 bg-[#0B1220]/80 backdrop-blur-xl border-b border-white/10">
+    <div className="fixed top-0 left-0 w-full z-40 bg-[#111827] backdrop-blur-xl border-b border-white/10">
       <div className="flex items-center justify-between px-4 py-4 md:px-8">
 
         <div className="flex items-center gap-3">

@@ -4,31 +4,59 @@ import Otp from "../../../../models/Otp";
 import { generateOtp } from "../../../../lib/generateOtp";
 import { sendOtpEmail } from "../../../../lib/mailer";
 import { checkRateLimit } from "../../../../lib/rateLimit";
+import { hashOtp } from "../../../../lib/hashOtp";
 
 export async function POST(req: Request) {
-  const { email } = await req.json();
-  await connectDB();
+  try {
+    const { email } = await req.json();
 
-  await Otp.deleteMany({ email });
+    const ip =
+      req.headers.get("x-forwarded-for") ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
 
-  const otp = generateOtp();
+    // ✅ Rate limit FIRST
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { message: "Too many requests. Try again later." },
+        { status: 429 }
+      );
+    }
 
-  const ip = req.headers.get("x-forwarded-for") || "unknown";
+    if (!email) {
+      return NextResponse.json(
+        { message: "Email is required" },
+        { status: 400 }
+      );
+    }
 
-if (!checkRateLimit(ip)) {
-  return NextResponse.json(
-    { message: "Too many requests. Try again later." },
-    { status: 429 }
-  );
-}
+    await connectDB();
 
-  await Otp.create({
-    email,
-    otp,
-    expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-  });
+    const normalizedEmail = email.toLowerCase().trim();
 
-    await sendOtpEmail(email, otp);
-  
+    // 🧹 Delete old OTPs
+    await Otp.deleteMany({ email: normalizedEmail, type: "signup" });
+
+    // 🔢 Generate + hash OTP
+    const otp = generateOtp();
+    const hashedOtp = hashOtp(otp);
+
+    await Otp.create({
+      email: normalizedEmail,
+      otp: hashedOtp,
+      type: "signup",
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    });
+
+    await sendOtpEmail(normalizedEmail, otp);
+
     return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Resend OTP error:", error);
+
+    return NextResponse.json(
+      { message: "Failed to resend OTP" },
+      { status: 500 }
+    );
   }
+}

@@ -202,10 +202,10 @@ export default function SignupPage() {
 
         {/* Password Rules */}
         <div className="text-xs px-2 flex flex-col gap-1">
-          <p className={passwordRules.minLength ? "text-green-400" : "text-zinc-500"}>• Minimum of 8 characters</p>
-          <p className={passwordRules.hasUppercase ? "text-green-400" : "text-zinc-500"}>• At least one capital letter</p>
-          <p className={passwordRules.hasNumber ? "text-green-400" : "text-zinc-500"}>• At least one number</p>
-          <p className={passwordRules.hasSpecial ? "text-green-400" : "text-zinc-500"}>• At least one special character</p>
+          <p className={passwordRules.minLength ? "text-green-400" : "text-red-500"}>• Minimum of 8 characters</p>
+          <p className={passwordRules.hasUppercase ? "text-green-400" : "text-red-500"}>• At least one capital letter</p>
+          <p className={passwordRules.hasNumber ? "text-green-400" : "text-red-500"}>• At least one number</p>
+          <p className={passwordRules.hasSpecial ? "text-green-400" : "text-red-500"}>• At least one special character</p>
         </div>
 
         {error && (
@@ -234,7 +234,7 @@ export default function SignupPage() {
         </p>
       </div>
 
-      {/* Tailwind Input Styling */}
+      {/*Input Styling */}
       <style jsx>{`
         .signup-input {
           background: #18181b;
