@@ -53,17 +53,6 @@ export default function ProviderOnboarding() {
   });
 
 
-    useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => {
-        router.replace("/dashboard/provider");
-        router.refresh();
-      }, 1500);
-
-      return () => clearTimeout(timer);
-    }
-  }, [success, router]);
-
   useEffect(() => {
     if (session?.user) {
       setForm((f) => ({
@@ -175,6 +164,10 @@ export default function ProviderOnboarding() {
 
       setSuccess(true);
 
+      setTimeout(() => {
+      router.replace("/dashboard/provider");
+    }, 1500);
+
     } catch (err) {
       toast.error("Something went wrong");
 
@@ -182,7 +175,6 @@ export default function ProviderOnboarding() {
       setSubmitting(false);
     }
 
-    if (submitting) return;
   };
 
   if (success) {
