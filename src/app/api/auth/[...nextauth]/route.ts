@@ -140,10 +140,12 @@ export const authOptions: AuthOptions = {
       }
     },
 
+
+
     /* -------------------------
        JWT SESSION PIPELINE
     -------------------------- */
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       await connectDB();
 
       // FIRST LOGIN
@@ -172,6 +174,32 @@ export const authOptions: AuthOptions = {
 
         return token;
       }
+
+      // HANDLES SESSION UPDATE
+      if (trigger === "update" && token.email) {
+        const dbUser = await User.findOne({ email: token.email });
+
+        if (dbUser) {
+          token.id = dbUser._id.toString();
+          token.role = dbUser.role ?? null;
+          token.onboardingStep = dbUser.onboardingStep ?? "role";
+          token.profileCompleted = dbUser.profileCompleted ?? false;
+          token.emailVerified = dbUser.emailVerified ?? false;
+          token.firstName = dbUser.firstName ?? "";
+          token.lastName = dbUser.lastName ?? "";
+
+          token.image =
+            dbUser.role === "provider"
+              ? dbUser.providerProfilePhoto?.url ?? undefined
+              : dbUser.avatar?.url ?? undefined;
+
+          token.isOnline = dbUser.isOnline ?? false; // ✅ KEEP THIS
+        }
+
+        return token;
+      }
+
+
 
       // REFRESH / PAGE RELOAD SYNC
       if (!token.email) return token;

@@ -8,7 +8,7 @@ import { User, Briefcase, Loader2 } from "lucide-react";
 export default function SelectRolePage() {
   const router = useRouter();
   const params = useSearchParams();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
 
   const [loadingRole, setLoadingRole] = useState<"customer" | "provider" | null>(null);
 
@@ -27,15 +27,17 @@ export default function SelectRolePage() {
   useEffect(() => {
     if (status === "loading") return;
 
-    // Not authenticated → signup
     if (!session && !email) {
       router.replace("/auth/signup");
       return;
     }
 
-    // Role already selected → skip page
+    // Only redirect if NOT already on correct path
     if (session?.user?.role) {
-      router.replace(`/onboarding/${session.user.role}`);
+      const target = `/onboarding/${session.user.role}`;
+      if (window.location.pathname !== target) {
+        router.replace(target);
+      }
     }
   }, [status, session, email, router]);
 
@@ -43,29 +45,33 @@ export default function SelectRolePage() {
   // Role selection
   // =========================
   const selectRole = async (role: "customer" | "provider") => {
-    if (!email || loadingRole) return;
+  if (!email || loadingRole) return;
 
-    setLoadingRole(role);
+  setLoadingRole(role);
 
-    try {
-      const res = await fetch("/api/role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role }),
-      });
+  try {
+    const res = await fetch("/api/role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, role }),
+    });
 
-      if (!res.ok) {
-        alert("Failed to save role");
-        setLoadingRole(null);
-        return;
-      }
-
-      router.push(`/onboarding/${role}`);
-    } catch {
-      alert("Something went wrong");
+    if (!res.ok) {
+      alert("Failed to save role");
       setLoadingRole(null);
+      return;
     }
-  };
+
+    // 🔥 THIS IS THE FIX
+    await update(); // Refresh session with new role
+
+    // Now navigation works instantly
+    router.push(`/onboarding/${role}`);
+  } catch {
+    alert("Something went wrong");
+    setLoadingRole(null);
+  }
+};
 
   // =========================
   // Loading screen
