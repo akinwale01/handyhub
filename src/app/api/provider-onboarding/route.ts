@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     const address = formData.get("address") as string;
     const location = formData.get("location") as string;
     const businessName = formData.get("businessName") as string;
-    const category = formData.get("category") as string;
+    const categories = JSON.parse(formData.get("categories") as string);
     const bio = formData.get("bio") as string;
 
     const profilePhoto = formData.get("profilePhoto");
@@ -83,30 +83,25 @@ export async function POST(req: Request) {
         .end(buffer);
     });
 
-    user.firstName = firstName;
-    user.lastName = lastName;
-    user.phone = phone;
-    user.address = address;
-    user.location = location;
-
-    user.businessName = businessName;
-    user.category = category;
-    user.bio = bio;
-
-    user.providerProfilePhoto = {
-      url: upload.secure_url,
-      publicId: upload.public_id,
-    };
-
-    user.onboardingStep = "done";
-    user.profileCompleted = true;
-
-    await user.save();
-
     await User.findByIdAndUpdate(user._id, {
-  role: "provider",
-  profileCompleted: true,
-});
+      firstName,
+      lastName,
+      phone,
+      address,
+      location,
+      businessName,
+      category,
+      bio,
+
+      providerProfilePhoto: {
+        url: upload.secure_url,
+        publicId: upload.public_id,
+      },
+
+      role: "provider",
+      onboardingStep: "done",
+      profileCompleted: true,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

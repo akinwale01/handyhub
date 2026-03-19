@@ -32,7 +32,7 @@ const PROVIDER_CATEGORIES = [
 ];
 
 export default function ProviderOnboarding() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
 
   const [submitting, setSubmitting] = useState(false);
@@ -164,9 +164,11 @@ export default function ProviderOnboarding() {
 
       setSuccess(true);
 
+      await update();
+
       setTimeout(() => {
-      router.replace("/dashboard/provider");
-    }, 1500);
+        router.replace("/dashboard/provider");
+      }, 100);
 
     } catch (err) {
       toast.error("Something went wrong");
