@@ -159,6 +159,7 @@ export default function ProviderOnboarding() {
       // 🔥 Redirect AFTER showing success screen
       setTimeout(() => {
         router.replace("/dashboard/provider");
+         router.refresh();
       }, 2000);
 
     } catch (err) {
