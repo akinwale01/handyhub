@@ -154,13 +154,13 @@ export default function ProviderOnboarding() {
 
       if (!res.ok) throw new Error("Upload failed");
 
-      router.replace("/dashboard/provider");
-
       setSuccess(true);
 
+      // 🔥 Redirect AFTER showing success screen
       setTimeout(() => {
         router.replace("/dashboard/provider");
       }, 2000);
+
     } catch (err) {
       alert("Something went wrong");
     } finally {
