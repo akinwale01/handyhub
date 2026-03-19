@@ -2,6 +2,7 @@
 import { SessionProvider } from "next-auth/react";
 import { Cascadia_Mono, Roboto } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 
 const cascadiaMono = Cascadia_Mono({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
         <SessionProvider>
           {children}
         </SessionProvider>
+        <Toaster position="top-right" />
       </body>
     </html>
   );

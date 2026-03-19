@@ -4,6 +4,7 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import toast from "react-hot-toast";
 import {
   Scissors,
   Shirt,
@@ -51,6 +52,18 @@ export default function ProviderOnboarding() {
     profilePhotoPreview: "",
   });
 
+
+    useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        router.replace("/dashboard/provider");
+        router.refresh();
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [success, router]);
+
   useEffect(() => {
     if (session?.user) {
       setForm((f) => ({
@@ -74,7 +87,7 @@ export default function ProviderOnboarding() {
     if (!file) return;
 
     if (file.size > 3 * 1024 * 1024) {
-      alert("Profile photo must not exceed 3MB");
+      toast.error("Profile photo must not exceed 3MB");
       return;
     }
 
@@ -122,9 +135,15 @@ export default function ProviderOnboarding() {
       }));
     };
 
-  const handleSubmit = async () => {
-    if (!form.profilePhoto) return alert("Upload your real photo");
-    if (!form.categories.length) return alert("Select at least one service");
+    const handleSubmit = async () => {
+    if (!form.profilePhoto) {
+    toast.error("Please upload your profile photo");
+    return;
+  }
+    if (!form.categories.length) {
+    toast.error("Select at least one service");
+    return;
+  }
 
     for (const cat of form.categories) {
       const price = form.pricing[cat];
@@ -156,17 +175,14 @@ export default function ProviderOnboarding() {
 
       setSuccess(true);
 
-      // 🔥 Redirect AFTER showing success screen
-      setTimeout(() => {
-        router.replace("/dashboard/provider");
-         router.refresh();
-      }, 2000);
-
     } catch (err) {
-      alert("Something went wrong");
+      toast.error("Something went wrong");
+
     } finally {
       setSubmitting(false);
     }
+
+    if (submitting) return;
   };
 
   if (success) {

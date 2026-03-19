@@ -62,10 +62,9 @@ export default function SelectRolePage() {
       return;
     }
 
-    // 🔥 THIS IS THE FIX
     await update(); // Refresh session with new role
 
-    // Now navigation works instantly
+
     router.push(`/onboarding/${role}`);
   } catch {
     alert("Something went wrong");
