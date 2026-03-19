@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       address,
       location,
       businessName,
-      category,
+      categories,
       bio,
 
       providerProfilePhoto: {
