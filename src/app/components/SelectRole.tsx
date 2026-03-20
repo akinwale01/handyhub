@@ -44,44 +44,40 @@ export default function SelectRolePage() {
   // =========================
   // Role selection
   // =========================
-  const selectRole = async (role: "customer" | "provider") => {
-  if (!email || loadingRole) return;
+    const selectRole = async (role: "customer" | "provider") => {
+      if (!email || loadingRole) return;
 
-  setLoadingRole(role);
+      setLoadingRole(role);
 
-  try {
-    const res = await fetch("/api/role", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, role }),
-    });
+      try {
+        const res = await fetch("/api/role", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, role }),
+        });
 
-    if (!res.ok) {
-      alert("Failed to save role");
-      setLoadingRole(null);
-      return;
-    }
+        if (!res.ok) {
+          alert("Failed to save role");
+          setLoadingRole(null);
+          return;
+        }
 
-    await update(); // Refresh session with new role
+        // 🔥 Wait for session to sync
+        await update();
 
+        // ❌ DO NOT navigate manually
+        // middleware + useEffect will handle it
 
-    router.push(`/onboarding/${role}`);
-  } catch {
-    alert("Something went wrong");
-    setLoadingRole(null);
-  }
-};
+      } catch {
+        alert("Something went wrong");
+        setLoadingRole(null);
+      }
+    };
 
   // =========================
   // Loading screen
   // =========================
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <Loader2 className="animate-spin text-white" size={32} />
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-black via-zinc-900 to-zinc-950 px-4">
@@ -147,6 +143,12 @@ export default function SelectRolePage() {
               </p>
             </div>
           </button>
+
+          {loadingRole && (
+            <p className="text-center text-sm text-zinc-400 animate-pulse">
+              Setting up your {loadingRole} account... please wait
+            </p>
+          )}
         </div>
 
         {/* Footer */}

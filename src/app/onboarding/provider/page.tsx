@@ -168,7 +168,7 @@ export default function ProviderOnboarding() {
 
       setTimeout(() => {
         router.replace("/dashboard/provider");
-      }, 100);
+      }, 1000);
 
     } catch (err) {
       toast.error("Something went wrong");
