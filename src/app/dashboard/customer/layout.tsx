@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { SWRConfig } from "swr";
-
-import TopNavbar from "../../components/provider/TopNav";
-import BottomNav from "../../components/provider/BottomNav";
-import FloatingMenu from "../../components/provider/FloatingMenu";
-import Sidebar from "../../components/provider/Sidebar";
 import useSWR from "swr";
+
+/* 👇 CUSTOMER COMPONENTS (separate from provider) */
+import TopNavbar from "../../components/customer/TopNav";
+import BottomNav from "../../components/customer/BottomNav";
+import FloatingMenu from "../../components/customer/FloatingMenu";
+import Sidebar from "../../components/customer/Sidebar";
 
 /* ✅ GLOBAL FETCHER */
 const fetcher = (url: string) =>
@@ -18,7 +19,7 @@ const fetcher = (url: string) =>
     return res.json();
   });
 
-export default function ProviderLayout({
+export default function CustomerLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -36,15 +37,15 @@ export default function ProviderLayout({
   );
 }
 
-/* ✅ MOVE SWR HERE */
+/* 🔥 Main Layout Logic */
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const { data, error } = useSWR("/api/provider-dashboard", {
+  const { data, error } = useSWR("/api/customer-dashboard", {
     keepPreviousData: true,
   });
 
-  /* 🚨 handle error (important) */
+  /* ❌ Error state */
   if (error) {
     return (
       <div className="text-white p-10">
@@ -53,18 +54,20 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  /* 🦴 skeleton */
+  /* 🦴 Skeleton */
   if (!data) {
     return <FullPageSkeleton />;
   }
 
-  /* ✅ real UI */
-return (
-  <div className="min-h-screen bg-[#0B1220] text-white flex ">
+  /* ✅ Real UI */
+  return (
+    <div className="min-h-screen bg-[#0B1220] text-white flex">
+      {/* Sidebar */}
       <div className="hidden md:block">
         <Sidebar />
       </div>
 
+      {/* Main */}
       <div className="flex-1 relative">
         <TopNavbar />
 
@@ -72,6 +75,7 @@ return (
           {children}
         </main>
 
+        {/* Mobile Nav */}
         <div className="md:hidden">
           <BottomNav onMenuClick={() => setMenuOpen(true)} />
         </div>
@@ -79,13 +83,14 @@ return (
         <FloatingMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
       </div>
     </div>
-);
+  );
 }
 
+/* 🦴 Skeleton (slightly tweaked for customer feel) */
 function FullPageSkeleton() {
   return (
     <div className="min-h-screen bg-[#0B1220] flex animate-pulse text-white">
-
+      
       {/* Sidebar Skeleton */}
       <div className="hidden md:flex w-64 flex-col gap-4 p-6 bg-white/5">
         <div className="h-6 w-32 bg-white/10 rounded" />
@@ -105,7 +110,7 @@ function FullPageSkeleton() {
         {/* Content Skeleton */}
         <div className="p-6 flex flex-col gap-6">
           <div className="h-10 w-48 bg-white/10 rounded" />
-          <div className="h-48 bg-white/10 rounded-3xl" />
+          <div className="h-48 bg-blue-500/10 rounded-3xl" />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="h-24 bg-white/10 rounded-2xl" />

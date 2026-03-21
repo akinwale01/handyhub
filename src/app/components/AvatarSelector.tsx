@@ -12,8 +12,8 @@ export default function AvatarSelector({ onSelect }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const generateAvatars = () => {
-    return Array.from({ length: 12 }).map((_, i) => {
-      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${gender}-${i}`;
+    return Array.from({ length: 30 }).map((_, i) => {
+      return `https://api.dicebear.com/9.x/avataaars/svg?seed=${gender}-${i}`;
     });
   };
 
@@ -24,7 +24,7 @@ export default function AvatarSelector({ onSelect }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-4 py-2 bg-black text-white rounded-xl"
+        className="px-4 py-2 bg-black text-white rounded-xl cursor-pointer"
       >
         Choose Avatar
       </button>
@@ -35,7 +35,7 @@ export default function AvatarSelector({ onSelect }: Props) {
 
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">Select Avatar</h2>
-              <button onClick={() => setOpen(false)}>✕</button>
+              <button onClick={() => setOpen(false)} className="cursor-pointer text-black font-black">✕</button>
             </div>
 
             {/* Gender Toggle */}
@@ -88,7 +88,7 @@ export default function AvatarSelector({ onSelect }: Props) {
                   setOpen(false);
                 }
               }}
-              className="w-full py-2 bg-black text-white rounded-xl disabled:opacity-50"
+              className="w-full py-2 bg-black text-white rounded-xl disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed flex justify-center items-center gap-2"
             >
               Confirm Selection
             </button>

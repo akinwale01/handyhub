@@ -2,10 +2,17 @@ import mongoose from "mongoose";
 
 const PaymentSchema = new mongoose.Schema(
   {
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     providerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     jobId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +23,9 @@ const PaymentSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
+    jobTitle: String,
+
   },
   { timestamps: true }
 );

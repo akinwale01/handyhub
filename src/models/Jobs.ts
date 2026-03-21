@@ -2,15 +2,17 @@ import mongoose from "mongoose";
 
 const JobSchema = new mongoose.Schema(
   {
-    clientId: {
+    customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     providerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     title: {
       type: String,
@@ -20,6 +22,7 @@ const JobSchema = new mongoose.Schema(
       type: String,
       enum: ["PENDING", "ACTIVE", "COMPLETED"],
       default: "PENDING",
+      index: true,
     },
     price: {
       type: Number,

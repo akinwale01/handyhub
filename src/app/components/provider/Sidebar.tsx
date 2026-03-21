@@ -36,7 +36,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Sidebar */}
-      <div className="h-screen w-64 bg-[#111827] border-r border-white/10 p-6 flex flex-col gap-8 shadow-lg">
+      <div className="h-full w-64 bg-[#111827] border-r border-white/10 p-6 flex flex-col gap-8 shadow-lg">
         {/* Title */}
         <div className="text-2xl font-bold text-emerald-400 tracking-wide">
           Provider

@@ -56,11 +56,12 @@ const UserSchema = new Schema(
     // =========================
     // Role & onboarding
     // =========================
-    role: {
-      type: String,
-      enum: ["customer", "provider"],
-      default: null, // must be chosen
-    },
+      role: {
+        type: String,
+        enum: ["customer", "provider"],
+        required: true,
+        index: true,
+      },
 
     onboardingStep: {
       type: String,
@@ -104,11 +105,17 @@ const UserSchema = new Schema(
       type: String,
       trim: true,
       default: "",
+      index: true,
     },
 
     avatar: {
       type: ImageSchema,
       default: null, // customer avatar (optional)
+    },
+
+        walletBalance: {
+      type: Number,
+      default: 0,
     },
 
     // =========================
@@ -124,6 +131,7 @@ const UserSchema = new Schema(
       type: String,
       trim: true,
       default: "",
+      index: true,
     },
 
     bio: {
@@ -168,6 +176,41 @@ const UserSchema = new Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+
+    // =========================
+    // Customer profile (only if role === customer)
+    // =========================
+
+    savedProviders: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    recentlyViewed: [
+      {
+    type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      },
+    ],
+
+
+    unreadNotifications: {
+    type: Number,
+    default: 0,
+  },
+
   },
   { timestamps: true }
 );

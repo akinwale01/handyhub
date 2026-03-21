@@ -47,7 +47,10 @@ export default function ProviderOnboarding() {
     businessName: "",
     bio: "",
     categories: [] as string[],
-    pricing: {} as Record<string, number>,
+    pricing: {} as Record<
+      string,
+      { type: "fixed" | "starting" | "negotiable"; amount?: number }
+    >,
     profilePhoto: null as File | null,
     profilePhotoPreview: "",
   });
@@ -115,14 +118,36 @@ export default function ProviderOnboarding() {
         return Number(value.replace(/,/g, ""));
     };
 
-    const handlePriceChange = (cat: string, value: string) => {
-      const numericValue = parseCurrency(value);
+      const handlePriceChange = (cat: string, value: string) => {
+        const numericValue = parseCurrency(value);
 
-      setForm((f) => ({
-        ...f,
-        pricing: { ...f.pricing, [cat]: numericValue },
-      }));
-    };
+        setForm((f) => ({
+          ...f,
+          pricing: {
+            ...f.pricing,
+            [cat]: {
+              ...f.pricing[cat],
+              amount: numericValue,
+            },
+          },
+        }));
+      };
+
+      const handlePriceTypeChange = (
+        cat: string,
+        type: "fixed" | "starting" | "negotiable"
+      ) => {
+        setForm((f) => ({
+          ...f,
+          pricing: {
+            ...f.pricing,
+            [cat]: {
+              type,
+              amount: type === "negotiable" ? undefined : f.pricing[cat]?.amount,
+            },
+          },
+        }));
+      };
 
     const handleSubmit = async () => {
     if (!form.profilePhoto) {
@@ -134,10 +159,21 @@ export default function ProviderOnboarding() {
     return;
   }
 
-    for (const cat of form.categories) {
-      const price = form.pricing[cat];
-      if (!price || price < 2000) return;
-}
+  for (const cat of form.categories) {
+    const pricing = form.pricing[cat];
+
+    if (!pricing) {
+      toast.error(`Set pricing for ${cat}`);
+      return;
+    }
+
+    if (pricing.type !== "negotiable") {
+      if (!pricing.amount || pricing.amount < 2000) {
+        toast.error(`Minimum price for ${cat} is ₦2,000`);
+        return;
+      }
+    }
+  }
 
     setSubmitting(true);
 
@@ -303,47 +339,104 @@ export default function ProviderOnboarding() {
         </div>
 
         {/* PRICING */}
+
         {form.categories.length > 0 && (
           <div className="flex flex-col gap-6">
             <h3 className="text-white font-semibold text-lg">
-              Set Pricing (Minimum ₦2,000)
+              Set Pricing
             </h3>
 
             {form.categories.map((cat) => {
-              const rawPrice = form.pricing[cat];
+              const pricing = form.pricing[cat] || {
+                type: "starting",
+                amount: undefined,
+              };
+
+              const rawPrice = pricing.amount;
               const formattedPrice = rawPrice
                 ? formatCurrency(String(rawPrice))
                 : "";
 
-              const isInvalid = rawPrice && rawPrice < 2000;
+              const isInvalid =
+                pricing.type !== "negotiable" &&
+                rawPrice &&
+                rawPrice < 2000;
 
               return (
-                <div key={cat} className="flex flex-col gap-2">
+                <div key={cat} className="flex flex-col gap-3 bg-zinc-800/40 p-4 rounded-xl border border-zinc-700">
 
-                  {/* Currency Input */}
-                  <div
-                    className={`flex items-center bg-zinc-800 border rounded-xl px-4 py-3 transition ${
-                      isInvalid
-                        ? "border-red-500"
-                        : "border-zinc-700 focus-within:border-indigo-500"
-                    }`}
-                  >
-                    <span className="text-zinc-400 mr-2">₦</span>
-
-                    <input
-                      type="text"
-                      value={formattedPrice}
-                      onChange={(e) =>
-                        handlePriceChange(cat, e.target.value)
-                      }
-                      className="bg-transparent w-full outline-none text-white"
-                      placeholder={`Enter price for ${cat}`}
-                    />
+                  {/* Category Title */}
+                  <div className="text-white font-medium capitalize">
+                    {cat}
                   </div>
 
-                  {isInvalid && (
-                    <p className="text-red-400 text-sm">
-                      Minimum price for this service is ₦2,000
+                  {/* Type Selector */}
+                  <div className="flex gap-2 flex-wrap">
+                    {["fixed", "starting", "negotiable"].map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() =>
+                          handlePriceTypeChange(
+                            cat,
+                            type as "fixed" | "starting" | "negotiable"
+                          )
+                        }
+                        className={`px-3 py-1 rounded-full text-sm capitalize transition ${
+                          pricing.type === type
+                            ? "bg-indigo-600 text-white"
+                            : "bg-zinc-700 text-zinc-300 hover:bg-zinc-600"
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+              </div>
+
+                  {/* Price Input */}
+                  {pricing.type !== "negotiable" && (
+                    <div className="flex flex-col gap-2">
+                      <div
+                        className={`flex items-center bg-zinc-900 border rounded-xl px-4 py-3 transition ${
+                          isInvalid
+                            ? "border-red-500"
+                            : "border-zinc-700 focus-within:border-indigo-500"
+                        }`}
+                      >
+                        <span className="text-zinc-400 mr-2">₦</span>
+
+                        <input
+                          type="text"
+                          value={formattedPrice}
+                          onChange={(e) =>
+                            handlePriceChange(cat, e.target.value)
+                          }
+                          className="bg-transparent w-full outline-none text-white"
+                          placeholder={
+                            pricing.type === "fixed"
+                              ? "Enter fixed price"
+                              : "Starting price"
+                          }
+                        />
+                      </div>
+
+                      <p className="text-xs text-zinc-400">
+                        {pricing.type === "fixed"
+                          ? "Customers will see this exact price"
+                          : "Final price may vary depending on job"}
+                      </p>
+
+                      {isInvalid && (
+                        <p className="text-red-400 text-sm">
+                          Minimum price is ₦2,000
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {pricing.type === "negotiable" && (
+                    <p className="text-xs text-zinc-400 italic">
+                      Price will be discussed with customer
                     </p>
                   )}
                 </div>
