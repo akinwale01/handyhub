@@ -9,6 +9,8 @@ import {
   Clock,
   Star,
   Wallet,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -25,8 +27,18 @@ export default function CustomerHome() {
   const { data, isValidating } = useSWR("/api/customer-dashboard");
 
   const [openChart, setOpenChart] = useState(false);
+  const [showBalance, setShowBalance] = useState(true);
 
   if (!data) return null;
+
+  // 💵 Currency formatter
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 2,
+    });
+  };
 
   const totalSpent = data.totalSpent ?? 0;
   const monthSpent = data.monthSpent ?? 0;
@@ -41,10 +53,10 @@ export default function CustomerHome() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col gap-8"
+      className="mx-auto flex flex-col gap-8"
     >
       {/* 🔷 Header */}
-      <div className="pt-10">
+      <div className="pt-10 flex flex-col gap-2">
         <h1 className="text-2xl md:text-3xl font-bold">
           Overview
         </h1>
@@ -53,38 +65,49 @@ export default function CustomerHome() {
         </p>
 
         {isValidating && (
-          <p className="text-xs text-gray-500 mt-1">Updating...</p>
+          <p className="text-xs text-gray-500">Updating...</p>
         )}
       </div>
 
       {/* 💸 Spending Card */}
-      <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-br from-blue-500/20 to-cyan-700/10 border border-blue-400/20 backdrop-blur-xl">
-        <div className="flex items-center gap-3 text-blue-400">
-          <Wallet size={18} />
-          <p className="text-sm">Total Spent</p>
+      <div className="relative overflow-hidden rounded-3xl p-8 bg-linear-to-br from-blue-500/20 to-cyan-700/10 border border-blue-400/20 backdrop-blur-xl flex flex-col gap-6">
+
+        {/* Top */}
+        <div className="flex items-center gap-10 text-blue-400">
+          <div className="flex items-center gap-3">
+            <Wallet size={18} />
+            <p className="text-sm">Available Balance</p>
+          </div>
+
+          {/* 👁️ Toggle */}
+          <button onClick={() => setShowBalance(!showBalance)}>
+            {showBalance ? <Eye size={18} /> : <EyeOff size={18} />}
+          </button>
         </div>
 
-        <h2 className="text-4xl font-bold mt-2">
-           ₦{totalSpent.toLocaleString()}
+        {/* Balance */}
+        <h2 className="text-4xl font-bold">
+          {showBalance ? formatCurrency(totalSpent) : "*****"}
         </h2>
 
-        <div className="flex items-end justify-between mt-6">
-          <div>
+        {/* Bottom */}
+        <div className="flex items-end justify-between">
+          <div className="flex flex-col gap-1">
             <p className="text-xs text-gray-400">This Month</p>
             <p className="text-blue-400 font-medium">
-               ₦{monthSpent.toLocaleString()}
+              {showBalance ? formatCurrency(monthSpent) : "••••••"}
             </p>
           </div>
 
-          <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 text-black font-semibold hover:opacity-90 transition">
-            View Payments
+          <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 text-black font-semibold hover:opacity-90 transition cursor-pointer">
+            Deposit
             <ArrowUpRight size={16} />
           </button>
         </div>
       </div>
 
       {/* 📊 Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 cursor-pointer">
         <StatCard
           icon={<Wallet size={18} />}
           label="Total Orders"
@@ -113,9 +136,9 @@ export default function CustomerHome() {
       {/* 📈 Spending Chart */}
       <div
         onClick={() => setOpenChart(true)}
-        className="bg-white/5 border border-white/10 rounded-3xl p-6 cursor-pointer hover:bg-white/10 transition"
+        className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col gap-4 cursor-pointer hover:bg-white/10 transition"
       >
-        <p className="text-sm text-gray-300 mb-4">
+        <p className="text-sm text-gray-300">
           Spending Overview
         </p>
 
@@ -140,8 +163,8 @@ export default function CustomerHome() {
       </div>
 
       {/* 📝 Activity */}
-      <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-        <p className="text-sm text-gray-300 mb-4">
+      <div className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col gap-4">
+        <p className="text-sm text-gray-300">
           Recent Activity
         </p>
 
@@ -161,7 +184,7 @@ export default function CustomerHome() {
       {/* 🪟 Modal */}
       {openChart && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="relative w-[95%] md:w-175 bg-[#0b0b0b] border border-white/10 rounded-3xl p-6">
+          <div className="relative w-[95%] md:w-175 bg-[#0b0b0b] border border-white/10 rounded-3xl p-6 flex flex-col gap-6">
             <button
               onClick={() => setOpenChart(false)}
               className="absolute top-4 right-4 text-gray-400"
@@ -169,7 +192,7 @@ export default function CustomerHome() {
               ✕
             </button>
 
-            <h3 className="text-lg font-semibold mb-6">
+            <h3 className="text-lg font-semibold">
               Spending Breakdown
             </h3>
 
@@ -223,7 +246,7 @@ function StatCard({
 function ActivityItem({ item }: { item: any }) {
   return (
     <div className="flex items-center justify-between">
-      <div>
+      <div className="flex flex-col gap-1">
         <p className="text-sm">{item.title}</p>
         <p className="text-xs text-gray-400">{item.subtitle}</p>
       </div>

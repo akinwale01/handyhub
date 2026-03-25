@@ -21,6 +21,7 @@ declare module "next-auth" {
       lastName: string;
       image?: string;
       isOnline: boolean;
+      unreadNotifications: number;
     };
   }
 }
@@ -164,6 +165,7 @@ export const authOptions: AuthOptions = {
         token.emailVerified = dbUser.emailVerified ?? false;
         token.firstName = dbUser.firstName ?? "";
         token.lastName = dbUser.lastName ?? "";
+        token.unreadNotifications = dbUser.unreadNotifications ?? 0;
 
         token.image =
           dbUser.role === "provider"
@@ -187,6 +189,7 @@ export const authOptions: AuthOptions = {
           token.emailVerified = dbUser.emailVerified ?? false;
           token.firstName = dbUser.firstName ?? "";
           token.lastName = dbUser.lastName ?? "";
+          token.unreadNotifications = dbUser.unreadNotifications ?? 0;
 
           token.image =
             dbUser.role === "provider"
@@ -214,6 +217,7 @@ export const authOptions: AuthOptions = {
       token.emailVerified = dbUser.emailVerified ?? false;
       token.firstName = dbUser.firstName ?? "";
       token.lastName = dbUser.lastName ?? "";
+      token.unreadNotifications = dbUser.unreadNotifications ?? 0;
 
       token.image =
         dbUser.role === "provider"
@@ -242,6 +246,7 @@ export const authOptions: AuthOptions = {
         session.user.lastName = token.lastName ?? "";
         session.user.image = token.image ?? undefined;
         session.user.isOnline = token.isOnline ?? false;
+        session.user.unreadNotifications = token.unreadNotifications ?? 0;
 
         session.user.name = `${session.user.firstName} ${session.user.lastName}`.trim();
       }

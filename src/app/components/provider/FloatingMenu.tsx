@@ -10,6 +10,7 @@ import {
   Settings,
   Star,
   X,
+  MessageCircle,
 } from "lucide-react";
 
 export default function FloatingMenu({
@@ -20,11 +21,13 @@ export default function FloatingMenu({
   onClose: () => void;
 }) {
   const items = [
-    { label: "Earnings", href: "/earnings", icon: Wallet },
-    { label: "Analytics", href: "/analytics", icon: BarChart3 },
-    { label: "Support", href: "/support", icon: LifeBuoy },
-    { label: "Reviews", href: "/reviews", icon: Star },
-    { label: "Verification", href: "/verification", icon: ShieldCheck },
+    { label: "Earnings", href: "/dashboard/provider/earnings", icon: Wallet },
+    { label: "Analytics", href: "/dashboard/provider/analytics", icon: BarChart3 },
+    { label: "Support", href: "/dashboard/provider/support", icon: LifeBuoy },
+    { label: "Reviews", href: "/dashboard/provider/reviews", icon: Star },
+    { label: "Verification", href: "/dashboard/provider/verification", icon: ShieldCheck },
+    { href: "/dashboard/provider/chats", label: "Chats", icon: MessageCircle},
+
   ];
 
   const radius = 130;
@@ -63,7 +66,7 @@ export default function FloatingMenu({
                 {/* Center */}
                 <MenuItem
                   label="Account"
-                  href="/manage"
+                  href="/dashboard/provider/settings"
                   icon={Settings}
                   style={{
                     left: "50%",
