@@ -201,7 +201,7 @@ function SidebarItem({
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all group
+      className={`flex items-center gap-3 p-3 rounded-xl transition-all group
         ${
           active
             ? "bg-blue-500/20 text-blue-400"

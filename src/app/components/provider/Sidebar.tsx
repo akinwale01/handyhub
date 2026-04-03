@@ -26,6 +26,7 @@ export default function Sidebar() {
   const [openSections, setOpenSections] = useState<string[]>([
     "Main",
     "Work",
+    "Action",
   ]);
 
   const toggleSection = (title: string) => {
@@ -141,51 +142,9 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Logout */}
-        <button
-          onClick={() => setLogoutOpen(true)}
-          className="px-3 py-2 rounded-xl bg-red-900 hover:bg-red-800 flex items-center justify-center gap-2 text-white text-sm font-semibold"
-        >
-          {!collapsed && "Logout"}
-        </button>
       </div>
 
-      {/* Logout Modal */}
-      {logoutOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-[#111827] rounded-2xl p-6 w-80 relative border border-white/10 flex flex-col gap-4">
-            <button
-              onClick={() => setLogoutOpen(false)}
-              className="absolute top-3 right-3 p-1 rounded-full hover:bg-white/10"
-            >
-              <X size={18} />
-            </button>
 
-            <h2 className="text-lg font-semibold text-white">
-              Confirm Logout
-            </h2>
-
-            <p className="text-sm text-gray-400">
-              Are you sure you want to log out?
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setLogoutOpen(false)}
-                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 rounded-xl bg-red-900 hover:bg-red-800 text-white"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
@@ -210,7 +169,7 @@ function SidebarItem({
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all group
+      className={`flex items-center gap-3 p-3 rounded-xl transition-all group
         ${
           active
             ? "bg-emerald-500/20 text-emerald-400"
