@@ -20,7 +20,7 @@ const JobSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["PENDING", "ACTIVE", "COMPLETED"],
+      enum: ["PENDING", "ACTIVE", "COMPLETED", "PENDING_COMPLETION"],
       default: "PENDING",
       index: true,
     },
@@ -28,6 +28,10 @@ const JobSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
+    description: String,
+    location: String,
+    scheduledDate: Date,
   },
   { timestamps: true }
 );

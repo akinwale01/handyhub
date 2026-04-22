@@ -24,7 +24,7 @@ import {
 /* 🧠 SWR DATA FETCH         */
 /* ========================= */
 export default function ProviderHome() {
-  const { data, isValidating } = useSWR("/api/provider-dashboard");
+  const { data, isValidating } = useSWR("/api/providers/analytic");
 
   if (!data) return null;
 

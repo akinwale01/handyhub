@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "../../../lib/mongodb";
-import Job from "../../../models/Jobs";
-import Payment from "../../../models/Payment";
-import Review from "../../../models/Review";
+import { connectDB } from "../../../../lib/mongodb";
+import Job from "../../../../models/Jobs";
+import Payment from "../../../../models/Payment";
+import Review from "../../../../models/Review";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 export async function GET() {
   await connectDB();

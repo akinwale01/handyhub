@@ -1,8 +1,8 @@
 import mongoose, { Schema, models } from "mongoose";
 
-/**
- * Reusable image sub-schema
- */
+/* =========================
+   IMAGE SCHEMA
+========================= */
 const ImageSchema = new Schema(
   {
     url: { type: String, required: true },
@@ -11,11 +11,33 @@ const ImageSchema = new Schema(
   { _id: false }
 );
 
+/* =========================
+   LOCATION SCHEMA (FIXED)
+========================= */
+const LocationSchema = new Schema(
+  {
+    state: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    area: {
+      type: String,
+      required: true,
+      index: true,
+    },
+  },
+  { _id: false }
+);
+
+/* =========================
+   USER SCHEMA
+========================= */
 const UserSchema = new Schema(
   {
-    // =========================
-    // Core identity
-    // =========================
+    /* =========================
+       CORE IDENTITY
+    ========================= */
     email: {
       type: String,
       required: true,
@@ -26,23 +48,12 @@ const UserSchema = new Schema(
 
     password: {
       type: String,
-      default: null, // null for OAuth users
+      default: null,
     },
-
-    resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date },
-
-    passwordResetToken: String,
-    passwordResetExpires: Date,
 
     googleId: {
       type: String,
       default: null,
-    },
-
-    isOnline: {
-    type: Boolean,
-    default: false,
     },
 
     emailVerified: {
@@ -50,18 +61,20 @@ const UserSchema = new Schema(
       default: false,
     },
 
-    emailVerificationToken: String,
-    emailVerificationExpires: Date,
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
 
-    // =========================
-    // Role & onboarding
-    // =========================
-      role: {
-        type: String,
-        enum: ["customer", "provider"],
-        required: true,
-        index: true,
-      },
+    /* =========================
+       ROLE SYSTEM
+    ========================= */
+    role: {
+      type: String,
+      enum: ["customer", "provider"],
+      default: null,
+      index: true,
+    },
 
     onboardingStep: {
       type: String,
@@ -74,80 +87,58 @@ const UserSchema = new Schema(
       default: false,
     },
 
-    // =========================
-    // Shared profile (customer + provider)
-    // =========================
-    firstName: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    lastName: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    phone: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    address: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    location: {
-      type: String,
-      trim: true,
-      default: "",
-      index: true,
-    },
+    /* =========================
+       BASIC PROFILE
+    ========================= */
+    firstName: { type: String, default: "" },
+    lastName: { type: String, default: "" },
+    phone: { type: String, default: "" },
 
     avatar: {
       type: ImageSchema,
-      default: null, // customer avatar (optional)
+      default: null,
     },
 
-        walletBalance: {
-      type: Number,
-      default: 0,
+    /* =========================
+       LOCATION
+    ========================= */
+    location: {
+      type: LocationSchema,
+      required: function (this: any): boolean {
+        return this.role === "provider";
+      },
+      default: undefined,
     },
 
-    // =========================
-    // Provider profile (only if role === provider)
-    // =========================
+    /* =========================
+       PROVIDER CORE
+    ========================= */
     businessName: {
       type: String,
-      trim: true,
       default: "",
-    },
-
-    category: {
-      type: String,
-      trim: true,
-      default: "",
-      index: true,
     },
 
     bio: {
       type: String,
-      trim: true,
       default: "",
+    },
+
+    services: {
+      type: [String],
+      default:undefined,
+      validate: {
+        validator: function (val: string[]) {
+          if (this.role !== "provider") return true;
+          return val.length > 0 && val.length <= 3;
+        },
+        message: "Providers must select 1 to 3 services",
+      },
+      index: true,
     },
 
     providerProfilePhoto: {
       type: ImageSchema,
-      default: null, // REQUIRED during provider onboarding
-    },
-
-    businessImage: {
-      type: ImageSchema,
-      default: null, // optional
+      default: null,
     },
 
     gallery: {
@@ -155,28 +146,16 @@ const UserSchema = new Schema(
       default: [],
     },
 
-    services: {
-      type: [String],
-      default: [],
-    },
-
     availability: {
       type: String,
-      trim: true,
-      default: "",
+      enum: ["available", "busy", "offline"],
+      default: "available",
+      index: true,
     },
 
-    providerVerified: {
-      type: Boolean,
-      default: false,
-    },
-
-    idVerificationStatus: {
-      type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
-    },
-
+    /* =========================
+       TRUST & QUALITY
+    ========================= */
     averageRating: {
       type: Number,
       default: 0,
@@ -187,10 +166,9 @@ const UserSchema = new Schema(
       default: 0,
     },
 
-    // =========================
-    // Customer profile (only if role === customer)
-    // =========================
-
+    /* =========================
+       CUSTOMER FEATURES
+    ========================= */
     savedProviders: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -200,17 +178,28 @@ const UserSchema = new Schema(
 
     recentlyViewed: [
       {
-    type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
 
-
+    /* =========================
+       SYSTEM
+    ========================= */
     unreadNotifications: {
-    type: Number,
-    default: 0,
-  },
+      type: Number,
+      default: 0,
+    },
 
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
+    isSuspended: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

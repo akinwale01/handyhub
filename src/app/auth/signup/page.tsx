@@ -95,7 +95,7 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = () => {
-    signIn("google", { callbackUrl: "/auth/select-role" });
+    signIn("google", { callbackUrl: "/auth/redirect" });
   };
 
   if (pageLoading) return <PageLoader />;

@@ -44,35 +44,34 @@ export default function SelectRolePage() {
   // =========================
   // Role selection
   // =========================
-    const selectRole = async (role: "customer" | "provider") => {
-      if (!email || loadingRole) return;
+  const selectRole = async (role: "customer" | "provider") => {
+    if (!email || loadingRole) return;
 
-      setLoadingRole(role);
+    setLoadingRole(role);
 
-      try {
-        const res = await fetch("/api/role", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, role }),
-        });
+    try {
+      const res = await fetch("/api/role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, role }),
+      });
 
-        if (!res.ok) {
-          alert("Failed to save role");
-          setLoadingRole(null);
-          return;
-        }
-
-        // 🔥 Wait for session to sync
-        await update();
-
-        // ❌ DO NOT navigate manually
-        // middleware + useEffect will handle it
-
-      } catch {
-        alert("Something went wrong");
+      if (!res.ok) {
+        alert("Failed to save role");
         setLoadingRole(null);
+        return;
       }
-    };
+
+      // 🔥 FORCE SESSION REFRESH (IMPORTANT)
+
+    await update();
+    router.replace("/auth/redirect");
+
+    } catch {
+      alert("Something went wrong");
+      setLoadingRole(null);
+    }
+  };
 
   // =========================
   // Loading screen

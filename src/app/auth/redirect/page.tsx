@@ -4,37 +4,36 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import PageLoader from "../../components/PageLoader";
+
 export default function AuthRedirectPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status !== "authenticated" || !session?.user) return;
+    if (status === "loading") return;
 
-    const { role, onboardingStep } = session.user;
+    // ❌ Not logged in
+    if (!session?.user) {
+      router.replace("/auth/login");
+      return;
+    }
 
-    // 1️⃣ No role selected yet
+    const { role, profileCompleted } = session.user;
+
+    // 1️⃣ No role
     if (!role) {
       router.replace("/auth/select-role");
       return;
     }
 
-    // 2️⃣ Onboarding not complete
-    if (onboardingStep !== "done") {
-      if (role === "customer") {
-        router.replace("/onboarding/customer");
-      } else if (role === "provider") {
-        router.replace("/onboarding/provider");
-      }
+    // 2️⃣ Not onboarded
+    if (!profileCompleted) {
+      router.replace(`/onboarding/${role}`);
       return;
     }
 
-    // 3️⃣ Fully onboarded → dashboard
-    if (role === "customer") {
-      router.replace("/dashboard/customer");
-    } else if (role === "provider") {
-      router.replace("/dashboard/provider");
-    }
+    // 3️⃣ Done
+    router.replace(`/dashboard/${role}`);
 
   }, [session, status, router]);
 

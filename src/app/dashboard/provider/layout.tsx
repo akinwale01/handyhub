@@ -40,7 +40,7 @@ export default function ProviderLayout({
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const { data, error } = useSWR("/api/provider-dashboard", {
+  const { data, error } = useSWR("/api/providers/analytic", {
     keepPreviousData: true,
   });
 

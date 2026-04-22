@@ -116,19 +116,24 @@ export const authOptions: AuthOptions = {
           let dbUser = await User.findOne({ email: user.email });
 
           if (!dbUser) {
-            // NEW USER → onboarding
             dbUser = await User.create({
               email: user.email,
               googleId: user.id,
               emailVerified: true,
+
               role: null,
               onboardingStep: "role",
               profileCompleted: false,
+
               firstName: user.name?.split(" ")[0] || "",
               lastName: user.name?.split(" ").slice(1).join(" ") || "",
+
+              availability: "available",
+              isOnline: true,
+
+              unreadNotifications: 0,
             });
           } else {
-            // EXISTING USER → mark online
             dbUser.isOnline = true;
             await dbUser.save();
           }
@@ -149,14 +154,15 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, trigger }) {
       await connectDB();
 
-      // FIRST LOGIN
-      if (user) {
-        const dbUser = await User.findOne({ email: user.email });
-        if (!dbUser) return token;
+      const email = token.email || user?.email;
+      if (!email) return token;
 
-        dbUser.isOnline = true;
-        await dbUser.save();
+      const dbUser = await User.findOne({ email });
+      if (!dbUser) return token;
 
+      const shouldRefresh = user || trigger === "update";
+
+      if (shouldRefresh) {
         token.id = dbUser._id.toString();
         token.email = dbUser.email;
         token.role = dbUser.role ?? null;
@@ -173,58 +179,7 @@ export const authOptions: AuthOptions = {
             : dbUser.avatar?.url ?? undefined;
 
         token.isOnline = dbUser.isOnline ?? false;
-
-        return token;
       }
-
-      // HANDLES SESSION UPDATE
-      if (trigger === "update" && token.email) {
-        const dbUser = await User.findOne({ email: token.email });
-
-        if (dbUser) {
-          token.id = dbUser._id.toString();
-          token.role = dbUser.role ?? null;
-          token.onboardingStep = dbUser.onboardingStep ?? "role";
-          token.profileCompleted = dbUser.profileCompleted ?? false;
-          token.emailVerified = dbUser.emailVerified ?? false;
-          token.firstName = dbUser.firstName ?? "";
-          token.lastName = dbUser.lastName ?? "";
-          token.unreadNotifications = dbUser.unreadNotifications ?? 0;
-
-          token.image =
-            dbUser.role === "provider"
-              ? dbUser.providerProfilePhoto?.url ?? undefined
-              : dbUser.avatar?.url ?? undefined;
-
-          token.isOnline = dbUser.isOnline ?? false; // ✅ KEEP THIS
-        }
-
-        return token;
-      }
-
-
-
-      // REFRESH / PAGE RELOAD SYNC
-      if (!token.email) return token;
-
-      const dbUser = await User.findOne({ email: token.email });
-      if (!dbUser) return token;
-
-      token.id = dbUser._id.toString();
-      token.role = dbUser.role ?? null;
-      token.onboardingStep = dbUser.onboardingStep ?? "role";
-      token.profileCompleted = dbUser.profileCompleted ?? false;
-      token.emailVerified = dbUser.emailVerified ?? false;
-      token.firstName = dbUser.firstName ?? "";
-      token.lastName = dbUser.lastName ?? "";
-      token.unreadNotifications = dbUser.unreadNotifications ?? 0;
-
-      token.image =
-        dbUser.role === "provider"
-          ? dbUser.providerProfilePhoto?.url ?? undefined
-          : dbUser.avatar?.url ?? undefined;
-
-      token.isOnline = dbUser.isOnline ?? false;
 
       return token;
     },
@@ -248,7 +203,7 @@ export const authOptions: AuthOptions = {
         session.user.isOnline = token.isOnline ?? false;
         session.user.unreadNotifications = token.unreadNotifications ?? 0;
 
-        session.user.name = `${session.user.firstName} ${session.user.lastName}`.trim();
+        session.user.name = `${session.user.firstName ?? ""} ${session.user.lastName ?? ""}`.trim();
       }
 
       return session;

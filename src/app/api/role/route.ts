@@ -35,7 +35,11 @@ export async function POST(req: Request) {
     // Update user
     const user = await User.findOneAndUpdate(
       { email: userEmail },
-      { role, onboardingStep: "profile" }, // move to next onboarding step
+      {
+        role,
+        onboardingStep: "profile",
+        profileCompleted: false, // ensure consistency
+      },
       { new: true }
     );
 

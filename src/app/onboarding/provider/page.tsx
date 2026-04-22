@@ -5,6 +5,7 @@ import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { nigeriaLocations } from "../../../lib/nigeriaLocations";
 import {
   Scissors,
   Shirt,
@@ -18,7 +19,7 @@ import {
   Plus,
 } from "lucide-react";
 
-const PROVIDER_CATEGORIES = [
+const PROVIDER_SERVICES = [
   { key: "barbing", label: "Barbing", icon: Scissors },
   { key: "laundry", label: "Laundry", icon: Shirt },
   { key: "cleaning", label: "Cleaning", icon: SprayCan },
@@ -38,15 +39,17 @@ export default function ProviderOnboarding() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const [state, setState] = useState("");
+  const [area, setArea] = useState("");
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     phone: "",
     address: "",
-    location: "",
     businessName: "",
     bio: "",
-    categories: [] as string[],
+    services: [] as string[],
     pricing: {} as Record<
       string,
       { type: "fixed" | "starting" | "negotiable"; amount?: number }
@@ -90,21 +93,21 @@ export default function ProviderOnboarding() {
     }));
   };
 
-  const maxCategories = 3;
+  const maxServices = 3;
 
     const toggleCategory = (key: string) => {
     setForm((f) => {
-      const exists = f.categories.includes(key);
+      const exists = f.services.includes(key);
 
-      if (!exists && f.categories.length >= maxCategories) {
+      if (!exists && f.services.length >= maxServices) {
         return f; // No alert — just ignore
       }
 
       return {
         ...f,
-        categories: exists
-          ? f.categories.filter((c) => c !== key)
-          : [...f.categories, key],
+        services: exists
+          ? f.services.filter((c) => c !== key)
+          : [...f.services, key],
       };
     });
   };
@@ -154,12 +157,18 @@ export default function ProviderOnboarding() {
     toast.error("Please upload your profile photo");
     return;
   }
-    if (!form.categories.length) {
+
+    if (!form.services.length) {
     toast.error("Select at least one service");
     return;
   }
 
-  for (const cat of form.categories) {
+    if (!state || !area) {
+    toast.error("Please select your state and area");
+    return;
+  }
+
+  for (const cat of form.services) {
     const pricing = form.pricing[cat];
 
     if (!pricing) {
@@ -188,7 +197,9 @@ export default function ProviderOnboarding() {
         }
       });
 
-      body.append("categories", JSON.stringify(form.categories));
+      body.append("services", JSON.stringify(form.services));
+      body.append("state", state);
+      body.append("area", area);
       body.append("pricing", JSON.stringify(form.pricing));
 
       const res = await fetch("/api/provider-onboarding", {
@@ -215,22 +226,46 @@ export default function ProviderOnboarding() {
 
   };
 
-  if (success) {
+ if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black relative overflow-hidden">
-        <div className="absolute w-125 h-125 bg-indigo-600 rounded-full blur-3xl opacity-20 animate-pulse" />
-        <div className="relative bg-zinc-900/80 backdrop-blur-xl p-12 rounded-3xl border border-zinc-700 shadow-2xl flex flex-col items-center gap-6 animate-slideUp">
-          <CheckCircle2 size={80} className="text-green-400 animate-bounce" />
-          <h2 className="text-3xl font-bold text-white text-center">
-            Congratulations 🎉
+
+        {/* glow */}
+        <div className="absolute w-125 h-125 bg-green-500/20 rounded-full blur-3xl animate-pulse" />
+
+        <div className="relative bg-zinc-900/80 backdrop-blur-xl p-12 rounded-3xl border border-green-500/30 shadow-2xl flex flex-col items-center gap-6 text-center">
+
+          <CheckCircle2 size={90} className="text-green-400 animate-bounce" />
+
+          <h2 className="text-3xl font-bold text-white">
+            You're All Set 🚀
           </h2>
-          <p className="text-zinc-400 text-center">
-            Your provider profile has been successfully created.
+
+          <p className="text-zinc-400 max-w-sm">
+            Your profile is ready. Taking you to your dashboard...
           </p>
+
+          {/* progress bar */}
+          <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden mt-2">
+            <div className="h-full bg-green-500 animate-progress" />
+          </div>
+
         </div>
+
+        <style jsx>{`
+          .animate-progress {
+            animation: progress 1.5s linear forwards;
+          }
+
+          @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+          }
+        `}</style>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden flex justify-center px-4 py-12">
@@ -286,14 +321,38 @@ export default function ProviderOnboarding() {
           }
         />
 
-          <FloatingInput
-            name="address"
-            value={form.address}
-            label="Business Address"
-            onChange={(e: any) =>
-              setForm({ ...form, address: e.target.value })
-            }
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <select
+            value={state}
+            onChange={(e) => {
+              setState(e.target.value);
+              setArea(""); // reset Area when state changes
+            }}
+            className="bg-zinc-800 text-white p-3 rounded-xl border border-zinc-700"
+          >
+              <option value="">Select State</option>
+              {Object.keys(nigeriaLocations).map((s) => (
+                <option key={s} value={s}>
+                  {s}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={area}
+            onChange={(e) => setArea(e.target.value)}
+            disabled={!state}
+            className="bg-zinc-800 text-white p-3 rounded-xl border border-zinc-700"
+          >
+            <option value="">Select Area (LGA)</option>
+            {state &&
+              nigeriaLocations[state].map((l: string) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+        </select>
+        </div>
 
         {/* SERVICES */}
         <div>
@@ -304,20 +363,20 @@ export default function ProviderOnboarding() {
 
             <div
               className={`px-3 py-1 rounded-full text-xs font-medium ${
-                form.categories.length === maxCategories
+                form.services.length === maxServices
                   ? "bg-indigo-600 text-white"
                   : "bg-zinc-800 text-zinc-400"
               }`}
             >
-              {form.categories.length}/{maxCategories} Selected
+              {form.services.length}/{maxServices} Selected
             </div>
           </div>
 
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {PROVIDER_CATEGORIES.map((cat) => {
+            {PROVIDER_SERVICES.map((cat) => {
               const Icon = cat.icon;
-              const active = form.categories.includes(cat.key);
+              const active = form.services.includes(cat.key);
 
               return (
                 <button
@@ -340,13 +399,13 @@ export default function ProviderOnboarding() {
 
         {/* PRICING */}
 
-        {form.categories.length > 0 && (
+        {form.services.length > 0 && (
           <div className="flex flex-col gap-6">
             <h3 className="text-white font-semibold text-lg">
               Set Pricing
             </h3>
 
-            {form.categories.map((cat) => {
+            {form.services.map((cat) => {
               const pricing = form.pricing[cat] || {
                 type: "starting",
                 amount: undefined,
